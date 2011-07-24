@@ -4,24 +4,86 @@
 <title>Tobias Otte - Front End Architect</title>
 
 <style type="text/css">
+  body, html, ul, li, h1, h2, h3, p {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  noscript, section, nav, article, aside, hgroup, header, footer, h1, h2, h3, h4, h5, h6, p, hr, li {
+    display: block;
+  }
+  
+  body { font: 62.5% "Helvetica Neue", Helvetica, Arial, sans-serif; background: #FEFEFE; color: #333; }
+  
+  .container { padding: 5em; max-width: 600px; margin: 0 auto; }
+  header { text-align: center; }
+  
+  h1 { font-size: 7em; color: #94201f; }
+  h2 { font-size: 3.2em; color: #D4421F; margin: -0.9em 0 0.2em; }
+  h3 {font-size: 1.7em; color: #D4421F; display: inline-block; margin-right: 8px; }
+  p { font-size: 2.3em; line-height: 1.4em; margin-bottom: 1em;}
+  a { color: #478A80; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  dfn { font-style: italic; }
+  
+  .profiles { font-size: 1.7em; display: inline-block; }
+  .profiles li { display: inline-block; margin: 0 8px 2.3em 0; }
+  
+  footer { font-size: 1.3em; }
+  footer li { display: inline-block; }
+  footer li::after { content: "\0000B7"; display: inline-block; margin: 0 5px 0 9px; }
+  footer li:last-child::after { display: none; }
+  
 </style>
+
+<script type="text/javascript" src="http://use.typekit.com/vmv4lti.js"></script>
+<script>try{Typekit.load();}catch(e){}</script>
 
 </head>
 <body>
-  
-  <h1>Tobias Otte</h1>
-  <h2>Front-End Architect</h2>
-  <p>Tobias polishes CSS, JS and markup. He finds his interest piqued by the likes of accessibility, semantics, and usability. His goal is to create the most usable, performant and handsome interface that's possible.</p>
-  <h3>Tobias on</h3>
-  <ul>
-    <li><a href="/xng">XING</a></li>
-    <li><a href="/li">LinkedIn</a></li>
-    <li><a href="/@">Twitter</a></li>
-    <li><a href="/gh">GitHub</a></li>
-    <li><a href="/+">Google+</a></li>
-    <li><a href="/fb">Facebook</a></li>
-  </ul>
-  <script>
+  <div class="container">
+    <header>
+      <h1>Tobias Otte</h1>
+      <h2>Front-End Architect</h2>
+    </header>
+    <p>Tobias polishes <dfn id="css"><abbr title="Cascading Style Sheets">CSS</abbr></dfn>, <dfn id="js"><abbr title="JavaScript">JS</abbr></dfn> and <dfn id="html" title="Hypertext Markup Language">markup</dfn>. He finds his interest piqued by the likes of accessibility, semantics, and usability. His goal is to create the most usable, performant and handsome interface that's possible.</p>
+    <h3>Tobias on</h3>
+    <ul class="profiles">
+      <li><a href="/xng">XING</a></li>
+      <li><a href="/li">LinkedIn</a></li>
+      <li><a href="/@">Twitter</a></li>
+      <li><a href="/gh">GitHub</a></li>
+      <li><a href="/+">Google+</a></li>
+      <li><a href="/fb">Facebook</a></li>
+      <li><a href="/tblr">Tumblr</a></li>
+    </ul>
+  <footer>
+    <ul>
+      <li><a href="http://creativecommons.org/licenses/by-sa/3.0/">&copy;</a> 2006-2011 Tobias Otte, Hamburg</li>
+      <li>Hosted by <a href="http://all-inkl.com/?partner=255690">ALL INKL</a></li>
+      <li><a href="https://github.com/Stereobit/stereobit/pull/new/master">Change me on GitHub</a></li>
+    </ul>
+  </footer>
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script>    
+    $(function() {
+      
+      function calcFontSize() {    
+        return $(".container").width() / 600;
+      };
+      
+      function setFontSize(size) {
+        $(".container").css("font-size", size + "em");
+      };
+      
+      setFontSize(calcFontSize());
+      
+      $(window).resize(function() {
+        setFontSize(calcFontSize());
+      });
+      
+    });
   </script>
 </body>
 </html>
