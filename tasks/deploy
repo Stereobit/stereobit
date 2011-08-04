@@ -1,0 +1,1 @@
+jekyll && rsync -avz --delete _site/ ssh-w00940ce@tobias-otte.de:/www/htdocs/w00940ce/stereobit/

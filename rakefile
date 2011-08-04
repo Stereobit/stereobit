@@ -1,0 +1,3 @@
+task :deploy do
+  sh "./tasks/deploy"
+end
