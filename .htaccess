@@ -1,3 +1,9 @@
+---
+layout: nil
+---
+
+ErrorDocument 404 /404.html
+
 Redirect /+ https://plus.google.com/117665874262309202218
 Redirect /fb http://www.facebook.com/tobias.otte
 Redirect /xng https://www.xing.com/profile/Tobias_Otte2
