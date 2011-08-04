@@ -1,2 +1,3 @@
+$ cat .gitignore
 mint/
 _site/
