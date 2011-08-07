@@ -3,7 +3,9 @@ package_path: ../min
 
 javascripts:
   general.min:
-    - js/dev/*/*.js
+    - js/dev/lib/jquery.js
+    - js/dev/lib/backbonne.js
+    - js/dev/classes/*.js
 
 stylesheets:
   general.min:
