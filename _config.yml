@@ -14,7 +14,7 @@ pygments:    false
 markdown:    maruku
 permalink:   date
 
-exclude: [rakefile, tasks, config, README]
+exclude: [rakefile, tasks, config, README, css, js, min]
 
 maruku:
   use_tex:    false
