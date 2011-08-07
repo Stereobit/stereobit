@@ -1,0 +1,10 @@
+embed_assets: on
+package_path: ../min
+
+javascripts:
+  general.min:
+    - js/dev/*/*.js
+
+stylesheets:
+  general.min:
+    - css/dev/*.css
