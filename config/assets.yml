@@ -3,9 +3,10 @@ package_path: ../min/temp
 
 javascripts:
   general.min:
-    - js/dev/lib/jquery.js
-    - js/dev/lib/backbone.js
-    - js/dev/classes/*.js
+    - js/lib/jquery.js
+    - js/lib/underscore.js
+    - js/lib/backbone.js
+    - js/classes/*js
 
 stylesheets:
   general.min:
