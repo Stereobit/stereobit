@@ -1,0 +1,7 @@
+#!/bin/bash
+
+./tasks/deploy
+
+rsync -avz --delete --exclude 'logs' --exclude 'usage' _site/ ssh-w00940ce@tobias-otte.de:/www/htdocs/w00940ce/stage.stereobit/
+
+rm -rf _site/*
