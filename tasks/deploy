@@ -1,24 +1,28 @@
 #!/bin/bash
 
 version=`date +%s`
- 
-jekyll && jammit
 
-mkdir _site/min
-mkdir _site/min/$version
+mkdir public
+mkdir public/min
+mkdir public/min/temp
+mkdir public/min/$version
 
-mv min/temp/general.min.css _site/min/$version/general.min.css
-mv min/temp/general.min.js _site/min/$version/general.min.js
-mv min/temp/general.min.css.gz _site/min/$version/general.min.css.gz
-mv min/temp/general.min.js.gz _site/min/$version/general.min.js.gz
+cp index.html public/index.html
+cp .htaccess public/.htaccess
+cp favicon.ico public/favicon.ico
 
-rm -rf min/*
+jammit
 
-for fl in _site/*.html; do
+mv public/min/temp/general.min.css public/min/$version/general.min.css
+mv public/min/temp/general.min.js public/min/$version/general.min.js
+mv public/min/temp/general.min.css.gz public/min/$version/general.min.css.gz
+mv public/min/temp/general.min.js.gz public/min/$version/general.min.js.gz
+
+rm -rf public/min/temp
+
+for fl in public/index.html; do
   mv $fl $fl.old
   sed 's/%version%/'$version'/g' $fl.old > $fl
 done
 
-rm _site/*.html.old
-
-cp .htaccess _site/.htaccess
+rm public/*.html.old
