@@ -3,7 +3,7 @@ RewriteBase /
 
 AddDefaultCharset UTF-8
 
-ErrorDocument 404 /404.html
+ErrorDocument 404 /index.html#404
 
 Redirect /+ https://plus.google.com/117665874262309202218
 Redirect /fb http://www.facebook.com/tobias.otte

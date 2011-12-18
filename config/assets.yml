@@ -7,6 +7,7 @@ javascripts:
     - js/lib/underscore.js
     - js/lib/backbone.js
     - js/config/templates.js
+    - js/config/content.js
     - js/config/router.js
     - js/models/*js
     - js/config/init.js

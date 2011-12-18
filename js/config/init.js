@@ -1,10 +1,11 @@
 var sbApp = sbApp || {};
-    sbApp.config = sbApp.config || {};
-    
-sbApp.config.outputElement = $("content");
+    sbApp.config = sbApp.config || {};   
 
-new sbApp.config.router;
-      
 $(function() {
+  sbApp.config.outputElement = $("#content");
+  sbApp.config.title = $("title");
+  
+   new sbApp.config.router; 
+  
   Backbone.history.start({pushState: true});
 });
