@@ -10,6 +10,7 @@ mkdir public/min/$version
 cp index.html public/index.html
 cp .htaccess public/.htaccess
 cp favicon.ico public/favicon.ico
+cp -R mint/ public/mint/
 
 jammit
 
@@ -23,6 +24,27 @@ rm -rf public/min/temp
 for fl in public/index.html; do
   mv $fl $fl.old
   sed 's/%version%/'$version'/g' $fl.old > $fl
+done
+
+rm public/*.html.old
+
+for fl in public/index.html; do
+  mv $fl $fl.old
+  sed 's/ -->//g' $fl.old > $fl
+done
+
+rm public/*.html.old
+
+for fl in public/index.html; do
+  mv $fl $fl.old
+  sed 's/<!-- //g' $fl.old > $fl
+done
+
+rm public/*.html.old
+
+for fl in public/index.html; do
+  mv $fl $fl.old
+  sed '/###/d' $fl.old > $fl
 done
 
 rm public/*.html.old

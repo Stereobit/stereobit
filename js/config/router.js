@@ -11,7 +11,7 @@ sbApp.config.router = Backbone.Router.extend({
   home: function() {
     var template = sbApp.config.templates.home,
         content = {content : "Tobias polishes <dfn id=\"css\"><abbr title=\"Cascading Style Sheets\">CSS</abbr></dfn>, <dfn id=\"js\"><abbr title=\"JavaScript\">JS</abbr></dfn> and <dfn id=\"html\" title=\"Hypertext Markup Language\">markup</dfn>. He finds his interest piqued by the likes of accessibility, semantics, and usability. His goal is to create the most usable, fast and handsome interface that's possible."};
-    console.log(this.compiled(template, content));
+    console.log(content);
     console.log(sbApp);
   },
   

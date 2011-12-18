@@ -13,4 +13,4 @@ javascripts:
 
 stylesheets:
   general.min:
-    - css/dev/*.css
+    - css/*.css
