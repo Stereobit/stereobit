@@ -21,6 +21,9 @@ a { color: #478A80; text-decoration: none; }
 a:hover { text-decoration: underline; }
 dfn { font-style: italic; }
 
+.blog { font-size: 1.8em; line-height: 1.4em; margin: 0 0 1em; list-style: square; }
+.blog li { margin-bottom: 0.3em; }
+
 .profiles { font-size: 1.7em; display: inline-block; }
 .profiles li { display: inline-block; margin: 0 8px 2.3em 0; }
 
