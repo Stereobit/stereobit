@@ -22,6 +22,6 @@ rm _site/*.html.old
 
 cp .htaccess _site/.htaccess
 
-rsync -avz --delete --exclude 'logs' --exclude 'usage' _site/ ssh-w00940ce@tobias-otte.de:/www/htdocs/w00940ce/stereobit/
+rsync -avz --delete --exclude 'logs' --exclude 'usage' --exclude 'mint' _site/ ssh-w00940ce@tobias-otte.de:/www/htdocs/w00940ce/stereobit/
 
 rm -rf _site/*
