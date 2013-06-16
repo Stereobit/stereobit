@@ -4,8 +4,6 @@ package_path: ../min/temp
 javascripts:
   general.min:
     - js/lib/jquery.js
-    - js/lib/underscore.js
-    - js/lib/backbone.js
     - js/classes/*js
 
 stylesheets:
