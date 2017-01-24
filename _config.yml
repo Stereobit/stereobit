@@ -1,17 +1,15 @@
 safe:        false
-auto:        false
-server:      false
-server_port: 4000
+port:        4000
 base-url:    /
 
 source:      .
 destination: ./_site
-plugins:     ./_plugins
+plugins_dir:     ./_plugins
 
 future:      true
 lsi:         false
-pygments:    false
-markdown:    maruku
+highlighter: false
+markdown:    kramdown
 permalink:   date
 
 exclude: [tasks, README, css, js, min]
@@ -31,7 +29,7 @@ kramdown:
   footnote_nr: 1
   entity_output: as_char
   toc_levels: 1..6
-  use_coderay: false
+  enable_coderay: false
 
   coderay:
     coderay_wrap: div

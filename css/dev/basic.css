@@ -14,7 +14,7 @@ body { font: 62.5% "Helvetica Neue", Helvetica, Arial, sans-serif; background: #
 header { text-align: center; }
 
 h1 { font-size: 7em; color: #94201f; text-shadow: 1px 1px 1px rgba(240, 136, 53, 0.5); }
-h2 { font-size: 3.2em; color: #D4421F; margin: -0.9em 0 0.2em; text-shadow: 1px 1px 1px rgba(240, 136, 53, 0.5); }
+h2 { font-size: 3.2em; color: #D4421F; margin: -0.2em 0 0.2em; text-shadow: 1px 1px 1px rgba(240, 136, 53, 0.5); }
 h3 {font-size: 1.7em; color: #D4421F; display: inline-block; margin-right: 8px; }
 p { font-size: 2.3em; line-height: 1.4em; margin-bottom: 1em;}
 a { color: #478A80; text-decoration: none; }

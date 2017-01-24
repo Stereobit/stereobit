@@ -9,3 +9,7 @@ javascripts:
 stylesheets:
   general.min:
     - css/dev/*.css
+
+exclude:
+  - Gemfile
+  - Gemfile.lock

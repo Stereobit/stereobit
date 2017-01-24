@@ -1,6 +1,6 @@
 #!/bin/bash
 version=`date +%s`
- 
+
 jekyll build && jammit --base-url ./
 
 mkdir _site/min
