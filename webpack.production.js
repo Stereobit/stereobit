@@ -87,6 +87,11 @@ module.exports = {
       filename: 'index.html',
       inject: 'body',
     }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src/404.html'),
+      filename: '404.html',
+      inject: 'body',
+    }),
     new CopyWebpackPlugin([
       { from: 'src/img' },
       { from: 'src/rootfiles' },
