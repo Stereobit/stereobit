@@ -6,7 +6,6 @@ AddDefaultCharset UTF-8
 ErrorDocument 404 /404.html
 
 Redirect /+ https://plus.google.com/117665874262309202218
-Redirect /fb http://www.facebook.com/tobias.otte
 Redirect /xng https://www.xing.com/profile/Tobias_Otte2
 Redirect /li http://www.linkedin.com/in/tobiasotte
 Redirect /@ https://twitter.com/stereobit
@@ -20,4 +19,3 @@ AddEncoding x-gzip text.gz
 <FilesMatch "\.(js|css|gz)$">
 Header set Cache-Control "max-age=29030400, public"
 </FilesMatch>
-

@@ -1,3 +1,7 @@
-$ cat .gitignore
 mint/
 _site/
+
+node_modules/
+build/
+
+yarn-error.log
