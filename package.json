@@ -1,0 +1,10 @@
+{
+  "name": "stereobit",
+  "version": "1.0.0",
+  "description": "Private Website",
+  "main": "bundle/index.js",
+  "repository": "https://github.com/Stereobit/stereobit.git",
+  "author": "Tobias Otte <t@stereob.it>",
+  "license": "MIT",
+  "private": true
+}
