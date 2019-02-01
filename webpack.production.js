@@ -18,12 +18,8 @@ module.exports = {
     compress: true,
     port: 3000
   },
-  watch: true,
-  devtool: 'eval-source-map',
-  mode: 'development',
-  watchOptions: {
-    ignored: /node_modules/,
-  },
+  devtool: 'source-map',
+  mode: 'production',
   module: {
     rules: [
       {
