@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const autoprefixer = require('autoprefixer');
 
 module.exports = {
@@ -12,11 +13,6 @@ module.exports = {
     sourceMapFilename: '[hash].[name].js.map',
     publicPath: '/',
     path: path.resolve(__dirname, 'build'),
-  },
-  devServer: {
-    contentBase: path.join(__dirname, 'dist'),
-    compress: true,
-    port: 3000
   },
   devtool: 'source-map',
   mode: 'production',
@@ -29,15 +25,9 @@ module.exports = {
           loader: 'babel-loader',
         },
       }, {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-        },
-      }, {
         test: [/\.css$/],
         use: [
-          { loader: 'style-loader' },
+           MiniCssExtractPlugin.loader,
           { loader: 'css-loader',
             options: {
               url: true,
@@ -54,12 +44,10 @@ module.exports = {
       }, {
         test: [/\.scss$/],
         use: [
-          { loader: 'style-loader' },
+           MiniCssExtractPlugin.loader,
           { loader: 'css-loader',
             options: {
               url: true,
-              modules: true,
-              localIdentName: '[folder]-[local]-[hash:base64:8]',
             },
           },
           { loader: 'postcss-loader',
@@ -106,6 +94,10 @@ module.exports = {
       test: /\.(js|html)$/,
       threshold: 10240,
       minRatio: 0.8,
+    }),
+    new MiniCssExtractPlugin({
+      filename: '[name].[hash].css',
+      chunkFilename: '[id].[hash].css',
     }),
   ]
 };
