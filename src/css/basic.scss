@@ -9,11 +9,12 @@ noscript, section, nav, article, aside, hgroup, header, footer, h1, h2, h3, h4, 
 }
 
 html {
-  font-size: 16px;
-  line-height: 1.5rem;
-  font: 62.5% Karla, "Helvetica Neue", Helvetica, Arial, sans-serif;
   overflow-y: scroll;
   overscroll-behavior: none;
+  font-size: 16px;
+  @media screen and (max-width: 900px) {
+    font-size: 14px;
+  }
 }
 
 body {
@@ -22,26 +23,101 @@ body {
   height: 100%;
   background: #FEFEFE;
   color: #43565F;
+  line-height: 1.5rem;
+  font-family: Karla, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.container { padding: 5rem; max-width: 700px; margin: 0 auto; }
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.content {
+  padding: 2rem 2rem 7rem;
+  max-width: 700px;
+}
+
+.about {
+  margin-bottom: 3rem;
+}
 
 h1 {
-  font-size: 3.5rem;
+  font-size: 2rem;
   color: #94201f;
   font-family: Rubik;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
-h3 {font-size: 1.7em; color: #D4421F; display: inline-block; margin-right: 8px; }
-p { font-size: 1rem; line-height: 1.4em; margin-bottom: 1em;}
-a { color: #478A80; text-decoration: none; }
-a:hover { text-decoration: underline; }
+h3 {
+  font-size: 1rem;
+  color: #D4421F;
+  display: inline-block;
+  margin: 0 1rem 0 0;
+}
 
-.profiles { font-size: 1.7em; display: inline-block; }
-.profiles li { display: inline-block; margin: 0 8px 2.3em 0; }
+p {
+  font-size: 1.25rem;
+  line-height: 1.8rem;
+  margin-bottom: 1rem;
+}
 
-footer { font-size: 1.3em; text-align: center; }
-footer li { display: inline-block; }
-footer li::after { content: "\0000B7"; display: inline-block; margin: 0 6px 0 11px; }
-footer li:last-child::after { display: none; }
+a {
+  color: #478A80;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.profiles {
+  font-size: 1rem;
+  display: inline-block;
+  margin: 0 0 1rem;
+
+  li {
+    display: inline-block;
+    margin: 0 .5rem 0 0;
+  }
+}
+
+footer {
+  font-size: .8rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  ul {
+    padding: 2rem;
+    width: 700px;
+  }
+
+  li {
+    display: inline-block;
+
+    &:after {
+      content: "\0000B7";
+      display: inline-block;
+      margin: 0 6px 0 11px;
+    }
+
+    &:last-child {
+      display: inline-block;
+
+      &:after {
+        display: none;
+      }
+
+      @media screen and (max-width: 900px) {
+        display: none;
+      }
+    }
+  }
+}
