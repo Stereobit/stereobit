@@ -75,8 +75,9 @@ module.exports = {
     ],
   },
   plugins: [
-    new MiniCssExtractPlugin({
-      filename: "[contenthash].[name].css",
+    new CompressionPlugin({
+      algorithm: "gzip",
+      test: /\.js$|\.css$|\.html$/,
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "src/index.html"),
@@ -96,11 +97,8 @@ module.exports = {
         NODE_ENV: JSON.stringify("production"),
       }),
     }),
-    new CompressionPlugin({
-      algorithm: "gzip",
-      test: /\.(js|html)$/,
-      threshold: 10240,
-      minRatio: 0.8,
+    new MiniCssExtractPlugin({
+      filename: "[contenthash].[name].css",
     }),
   ],
 };

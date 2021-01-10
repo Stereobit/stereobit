@@ -12,16 +12,27 @@ Redirect /@ https://twitter.com/stereobit
 Redirect /gh https://github.com/Stereobit
 
 RewriteCond %{HTTP:Accept-Encoding} .*gzip.*
-RewriteRule ^js/(.*)\.js$ /scripts/$1.js.gz [L]
-RewriteRule ^css/(.*)\.css$ /css/$1.css.gz [L]
-AddEncoding x-gzip text.gz
+RewriteRule ^(.*)\.js$ /$1.js.gz [L]
+RewriteRule ^(.*)\.css$ /$1.css.gz [L]
 
 <FilesMatch "\.(js|css|gz)$">
 Header set Cache-Control "max-age=29030400, public"
 </FilesMatch>
 
-Header add Content-Security-Policy "default-src https:"
-Header add Strict-Transport-Security "max-age=63072000"
+<FilesMatch "\.(js.gz)$">
+Header set Content-Encoding "gzip"
+Header set Content-Type "application/javascript"
+</FilesMatch>
+
+<FilesMatch "\.(css.gz)$">
+Header set Content-Encoding "gzip"
+Header set Content-Type "text/css"
+</FilesMatch>
+
+Header add Content-Security-Policy "default-src 'none'; img-src 'self'; script-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; base-uri https://stereob.it; frame-ancestors 'none'; form-action 'none'"
+Header add Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 Header add X-Frame-Options "DENY"
 Header add X-Content-Type-Options "nosniff"
 Header add X-XSS-Protection "1; mode=block"
+Header add Referrer-Policy "same-origin"
+
