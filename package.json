@@ -31,7 +31,7 @@
     "start": "NODE_ENV=development webpack-dev-server",
     "build": "NODE_ENV=production webpack --env.prod",
     "clean": "rm -rf ./build",
-    "deploy": "yarn clean && yarn build && rsync -avz --delete --exclude 'logs' --exclude 'usage' --exclude 'mint' build/ ssh-w00940ce@tobias-otte.de:/www/htdocs/w00940ce/stereobit/"
+    "deploy": "yarn clean && yarn build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ ssh-w00940ce@tobias-otte.de:/www/htdocs/w00940ce/stereobit/"
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
