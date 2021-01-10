@@ -30,7 +30,7 @@
     "start": "NODE_ENV=development webpack serve --config webpack.development.js",
     "build": "NODE_ENV=production webpack --config webpack.production.js",
     "clean": "rm -rf ./build",
-    "deploy": "yarn clean && yarn build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ ssh-w00940ce@w00940ce.kasserver.com:/www/htdocs/w00940ce/stereobit/"
+    "deploy": "yarn clean && yarn build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ $(grep SSH_URL .env | cut -d '=' -f2)"
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
