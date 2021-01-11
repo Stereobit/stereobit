@@ -7,7 +7,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const autoprefixer = require('autoprefixer');
 
 module.exports = {
-  entry: ["@babel/polyfill", "./src/index.js"],
+  entry: ["./src/index.js"],
   output: {
     filename: "[contenthash].[name].js",
     sourceMapFilename: "[contenthash].[name].js.map",
@@ -78,6 +78,7 @@ module.exports = {
     new CompressionPlugin({
       algorithm: "gzip",
       test: /\.js$|\.css$|\.html$/,
+      minRatio: 1,
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "src/index.html"),
