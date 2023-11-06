@@ -21,7 +21,6 @@
     "node-sass": "^7.0.1",
     "normalize.css": "^8.0.1",
     "postcss-loader": "^6.2.1",
-    "preload-webpack-plugin": "^2.3.0",
     "sass-loader": "^12.6.0",
     "style-loader": "^3.3.1",
     "webpack": "^5.70.0",
@@ -32,6 +31,6 @@
     "start": "NODE_ENV=development webpack serve --config webpack.development.js",
     "build": "NODE_ENV=production webpack --config webpack.production.js",
     "clean": "rm -rf ./build",
-    "deploy": "yarn clean && yarn build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ $(grep SSH_URL .env | cut -d '=' -f2)"
+    "deploy": "npm run clean && npm run build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ $(grep SSH_URL .env | cut -d '=' -f2)"
   }
 }
