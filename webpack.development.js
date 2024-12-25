@@ -1,15 +1,14 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: ["./src/index.js"],
-  mode: 'development',
+  mode: "development",
   devServer: {
     compress: true,
     port: 3000,
   },
-  watch: true,
   devtool: "eval-source-map",
   mode: "development",
   watchOptions: {
