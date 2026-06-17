@@ -27,6 +27,69 @@ body {
   font-family: Karla, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: #FEFEFE;
+
+  span {
+    position: absolute;
+    display: block;
+    width: 55vmax;
+    height: 55vmax;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: .22;
+    will-change: transform;
+    mix-blend-mode: multiply;
+  }
+
+  span:nth-child(1) {
+    top: -15vmax;
+    left: -10vmax;
+    background: radial-gradient(circle at center, #94201f 0%, rgba(148, 32, 31, 0) 70%);
+    animation: drift-a 26s ease-in-out infinite alternate;
+  }
+
+  span:nth-child(2) {
+    bottom: -20vmax;
+    right: -12vmax;
+    background: radial-gradient(circle at center, #D4421F 0%, rgba(212, 66, 31, 0) 70%);
+    animation: drift-b 32s ease-in-out infinite alternate;
+  }
+
+  span:nth-child(3) {
+    top: 30vmax;
+    right: 20vmax;
+    background: radial-gradient(circle at center, #478A80 0%, rgba(71, 138, 128, 0) 70%);
+    animation: drift-c 38s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(12vmax, 8vmax, 0) scale(1.15); }
+}
+
+@keyframes drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to   { transform: translate3d(-14vmax, -10vmax, 0) scale(0.9); }
+}
+
+@keyframes drift-c {
+  from { transform: translate3d(0, 0, 0) scale(0.95); }
+  to   { transform: translate3d(-10vmax, 12vmax, 0) scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg span {
+    animation: none;
+  }
+}
+
 .container {
   display: flex;
   justify-content: center;
