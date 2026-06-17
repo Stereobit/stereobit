@@ -11,8 +11,12 @@ Redirect /li http://www.linkedin.com/in/tobiasotte
 Redirect /@ https://twitter.com/stereobit
 Redirect /gh https://github.com/Stereobit
 
-RewriteCond %{HTTP:Accept-Encoding} .*gzip.*
+RewriteCond %{HTTP:Accept-Encoding} gzip
+RewriteCond %{REQUEST_FILENAME}.gz -f
 RewriteRule ^(.*)\.js$ /$1.js.gz [L]
+
+RewriteCond %{HTTP:Accept-Encoding} gzip
+RewriteCond %{REQUEST_FILENAME}.gz -f
 RewriteRule ^(.*)\.css$ /$1.css.gz [L]
 
 <FilesMatch "\.(js|css|gz)$">
