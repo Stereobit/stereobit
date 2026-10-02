@@ -34,7 +34,7 @@ SSH_URL=user@host:/path/to/webroot/
 
 ## Layout
 
-- `src/index.html`, `src/404.html`: the pages. The JS entry is injected at build time (see `vite.config.js`).
-- `src/index.js`: entry point. Imports the styles and swaps in the web fonts once the page has loaded.
-- `src/css/basic.scss`: styles, built on top of `normalize.css` and autoprefixed using `.browserslistrc`.
-- `src/rootfiles/`: copied unchanged to the web root. Includes `.htaccess`, which handles the short-link redirects, serving the pre-gzipped `.gz` files, caching and security headers.
+- `src/index.html`, `src/404.html`: the pages. There is no JavaScript.
+- `src/css/basic.css`: styles in plain CSS (nesting included). Vite compiles them with Lightning CSS, which flattens nesting and adds vendor prefixes for the browsers in `.browserslistrc`.
+- Fonts (Karla, Rubik) are self-hosted from `@fontsource-variable/*` and bundled into `build/assets/`.
+- `src/rootfiles/`: copied unchanged to the web root. Includes the favicons and `.htaccess`, which handles the short-link redirects, serving the pre-compressed `.br`/`.gz` files, caching and security headers.

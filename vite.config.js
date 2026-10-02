@@ -1,24 +1,10 @@
 import { resolve } from "node:path"
 import { defineConfig } from "vite"
 import { compression } from "vite-plugin-compression2"
-import autoprefixer from "autoprefixer"
+import browserslist from "browserslist"
+import { browserslistToTargets } from "lightningcss"
 
 const src = resolve(import.meta.dirname, "src")
-
-// Inject the JS entry into every page, so the HTML templates stay free of build wiring.
-const injectEntry = () => ({
-  name: "inject-entry",
-  transformIndexHtml: {
-    order: "pre",
-    handler: () => [
-      {
-        tag: "script",
-        attrs: { type: "module", src: "/index.js" },
-        injectTo: "body",
-      },
-    ],
-  },
-})
 
 export default defineConfig({
   root: src,
@@ -30,14 +16,15 @@ export default defineConfig({
     port: 3000,
   },
   css: {
-    postcss: {
-      plugins: [autoprefixer()],
+    transformer: "lightningcss",
+    lightningcss: {
+      targets: browserslistToTargets(browserslist()),
     },
   },
   build: {
     outDir: resolve(import.meta.dirname, "build"),
     emptyOutDir: true,
-    sourcemap: true,
+    cssMinify: "lightningcss",
     rolldownOptions: {
       input: {
         index: resolve(src, "index.html"),
@@ -46,10 +33,9 @@ export default defineConfig({
     },
   },
   plugins: [
-    injectEntry(),
     compression({
-      algorithms: ["gzip"],
-      include: /\.(js|css|html)$/,
+      algorithms: ["gzip", "brotliCompress"],
+      include: /\.(js|css|html|svg)$/,
       threshold: 0,
       skipIfLargerOrEqual: true,
     }),

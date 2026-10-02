@@ -1,18 +1,35 @@
+@import "@fontsource-variable/karla/wght.css";
+@import "@fontsource-variable/rubik/wght.css";
+
+:root {
+  --color-bg: #fefefe;
+  --color-text: #43565f;
+  --color-red: #94201f;
+  --color-orange: #d4421f;
+  --color-teal: #478a80;
+
+  --font-body: "Karla Variable", Karla, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-heading: "Rubik Variable", Rubik, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 body, html, ul, li, h1, h2, h3, p {
   border: 0;
   margin: 0;
   padding: 0;
 }
 
-noscript, section, nav, article, aside, hgroup, header, footer, h1, h2, h3, h4, h5, h6, p, hr, li {
+li {
   display: block;
 }
 
 html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   overflow-y: scroll;
   overscroll-behavior: none;
   font-size: 16px;
-  @media screen and (max-width: 900px) {
+
+  @media (width <= 900px) {
     font-size: 14px;
   }
 }
@@ -20,11 +37,12 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  height: 100%;
-  background: #FEFEFE;
-  color: #43565F;
+  position: relative;
+  min-height: 100svh;
+  background: var(--color-bg);
+  color: var(--color-text);
   line-height: 1.5rem;
-  font-family: Karla, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 .bg {
@@ -33,7 +51,7 @@ body {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  background: #FEFEFE;
+  background: var(--color-bg);
 
   span {
     position: absolute;
@@ -50,21 +68,21 @@ body {
   span:nth-child(1) {
     top: -15vmax;
     left: -10vmax;
-    background: radial-gradient(circle at center, #94201f 0%, rgba(148, 32, 31, 0) 70%);
+    background: radial-gradient(circle at center, var(--color-red) 0%, rgba(148, 32, 31, 0) 70%);
     animation: drift-a 26s ease-in-out infinite alternate;
   }
 
   span:nth-child(2) {
     bottom: -20vmax;
     right: -12vmax;
-    background: radial-gradient(circle at center, #D4421F 0%, rgba(212, 66, 31, 0) 70%);
+    background: radial-gradient(circle at center, var(--color-orange) 0%, rgba(212, 66, 31, 0) 70%);
     animation: drift-b 32s ease-in-out infinite alternate;
   }
 
   span:nth-child(3) {
     top: 30vmax;
     right: 20vmax;
-    background: radial-gradient(circle at center, #478A80 0%, rgba(71, 138, 128, 0) 70%);
+    background: radial-gradient(circle at center, var(--color-teal) 0%, rgba(71, 138, 128, 0) 70%);
     animation: drift-c 38s ease-in-out infinite alternate;
   }
 }
@@ -94,7 +112,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100svh;
 }
 
 .content {
@@ -108,15 +126,15 @@ body {
 
 h1 {
   font-size: 2rem;
-  color: #94201f;
-  font-family: Rubik, "Helvetica Neue", Helvetica, Arial, sans-serif;;
+  color: var(--color-red);
+  font-family: var(--font-heading);
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
 h2 {
   font-size: 1rem;
-  color: #D4421F;
+  color: var(--color-orange);
   display: inline-block;
   margin: 0 1rem 0 0;
 }
@@ -125,10 +143,11 @@ p {
   font-size: 1.25rem;
   line-height: 1.8rem;
   margin-bottom: 1rem;
+  text-wrap: pretty;
 }
 
 a {
-  color: #478A80;
+  color: var(--color-teal);
   text-decoration: none;
 
   &:hover {
@@ -165,20 +184,14 @@ footer {
   li {
     display: inline-block;
 
-    &:after {
-      content: "\0000B7";
+    & + li::before {
+      content: "\B7";
       display: inline-block;
-      margin: 0 6px 0 6px;
+      margin: 0 6px;
     }
 
     &:last-child {
-      display: inline-block;
-
-      &:after {
-        display: none;
-      }
-
-      @media screen and (max-width: 900px) {
+      @media (width <= 900px) {
         display: none;
       }
     }

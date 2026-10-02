@@ -5,38 +5,63 @@ AddDefaultCharset UTF-8
 
 ErrorDocument 404 /404.html
 
-Redirect /+ https://plus.google.com/117665874262309202218
-Redirect /xng https://www.xing.com/profile/Tobias_Otte2
-Redirect /li http://www.linkedin.com/in/tobiasotte
+# Short links
+Redirect /li https://www.linkedin.com/in/tobiasotte
 Redirect /@ https://twitter.com/stereobit
 Redirect /gh https://github.com/Stereobit
 
-RewriteCond %{HTTP:Accept-Encoding} gzip
-RewriteCond %{REQUEST_FILENAME}.gz -f
-RewriteRule ^(.*)\.js$ /$1.js.gz [L]
+# Serve the pre-compressed files from the build: Brotli if accepted, else gzip
+RewriteCond %{HTTP:Accept-Encoding} br
+RewriteCond %{REQUEST_FILENAME}.br -f
+RewriteRule ^(.+\.(?:js|css|html|svg))$ $1.br [E=no-gzip:1,E=no-brotli:1,L]
 
 RewriteCond %{HTTP:Accept-Encoding} gzip
 RewriteCond %{REQUEST_FILENAME}.gz -f
-RewriteRule ^(.*)\.css$ /$1.css.gz [L]
+RewriteRule ^(.+\.(?:js|css|html|svg))$ $1.gz [E=no-gzip:1,E=no-brotli:1,L]
 
-<FilesMatch "\.(js|css|gz)$">
-Header set Cache-Control "max-age=29030400, public"
+# .br is also the Breton language extension in Apache's defaults
+RemoveLanguage .br
+
+<FilesMatch "\.br$">
+Header set Content-Encoding "br"
 </FilesMatch>
 
-<FilesMatch "\.(js.gz)$">
+<FilesMatch "\.gz$">
 Header set Content-Encoding "gzip"
-Header set Content-Type "application/javascript"
 </FilesMatch>
 
-<FilesMatch "\.(css.gz)$">
-Header set Content-Encoding "gzip"
-Header set Content-Type "text/css"
+<FilesMatch "\.js\.(br|gz)$">
+ForceType "text/javascript; charset=utf-8"
 </FilesMatch>
 
-Header add Content-Security-Policy "default-src 'none'; img-src 'self'; script-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; base-uri https://stereob.it; frame-ancestors 'none'; form-action 'none'"
-Header add Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
-Header add X-Frame-Options "DENY"
-Header add X-Content-Type-Options "nosniff"
-Header add X-XSS-Protection "1; mode=block"
-Header add Referrer-Policy "same-origin"
+<FilesMatch "\.css\.(br|gz)$">
+ForceType "text/css; charset=utf-8"
+</FilesMatch>
 
+<FilesMatch "\.html\.(br|gz)$">
+ForceType "text/html; charset=utf-8"
+</FilesMatch>
+
+<FilesMatch "\.svg\.(br|gz)$">
+ForceType "image/svg+xml"
+</FilesMatch>
+
+<FilesMatch "\.(js|css|html|svg)(\.br|\.gz)?$">
+Header append Vary "Accept-Encoding"
+</FilesMatch>
+
+# Hashed build assets never change; everything else is revalidated
+<If "%{REQUEST_URI} =~ m#^/assets/#">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</If>
+<Else>
+Header set Cache-Control "no-cache"
+</Else>
+
+Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'self'; font-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
+Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+Header always set X-Frame-Options "DENY"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "same-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+Header always set Cross-Origin-Opener-Policy "same-origin"
