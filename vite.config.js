@@ -1,6 +1,5 @@
 import { resolve } from "node:path"
 import { defineConfig } from "vite"
-import { compression } from "vite-plugin-compression2"
 import browserslist from "browserslist"
 import { browserslistToTargets } from "lightningcss"
 
@@ -32,12 +31,4 @@ export default defineConfig({
       },
     },
   },
-  plugins: [
-    compression({
-      algorithms: ["gzip", "brotliCompress"],
-      include: /\.(js|css|html|svg)$/,
-      threshold: 0,
-      skipIfLargerOrEqual: true,
-    }),
-  ],
 })

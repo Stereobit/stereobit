@@ -1,6 +1,3 @@
-RewriteEngine On
-RewriteBase /
-
 AddDefaultCharset UTF-8
 
 ErrorDocument 404 /404.html
@@ -9,46 +6,6 @@ ErrorDocument 404 /404.html
 Redirect /li https://www.linkedin.com/in/tobiasotte
 Redirect /@ https://twitter.com/stereobit
 Redirect /gh https://github.com/Stereobit
-
-# Serve the pre-compressed files from the build: Brotli if accepted, else gzip
-RewriteCond %{HTTP:Accept-Encoding} br
-RewriteCond %{REQUEST_FILENAME}.br -f
-RewriteRule ^(.+\.(?:js|css|html|svg))$ $1.br [E=no-gzip:1,E=no-brotli:1,L]
-
-RewriteCond %{HTTP:Accept-Encoding} gzip
-RewriteCond %{REQUEST_FILENAME}.gz -f
-RewriteRule ^(.+\.(?:js|css|html|svg))$ $1.gz [E=no-gzip:1,E=no-brotli:1,L]
-
-# .br is also the Breton language extension in Apache's defaults
-RemoveLanguage .br
-
-<FilesMatch "\.br$">
-Header set Content-Encoding "br"
-</FilesMatch>
-
-<FilesMatch "\.gz$">
-Header set Content-Encoding "gzip"
-</FilesMatch>
-
-<FilesMatch "\.js\.(br|gz)$">
-ForceType "text/javascript; charset=utf-8"
-</FilesMatch>
-
-<FilesMatch "\.css\.(br|gz)$">
-ForceType "text/css; charset=utf-8"
-</FilesMatch>
-
-<FilesMatch "\.html\.(br|gz)$">
-ForceType "text/html; charset=utf-8"
-</FilesMatch>
-
-<FilesMatch "\.svg\.(br|gz)$">
-ForceType "image/svg+xml"
-</FilesMatch>
-
-<FilesMatch "\.(js|css|html|svg)(\.br|\.gz)?$">
-Header append Vary "Accept-Encoding"
-</FilesMatch>
 
 # Hashed build assets never change; everything else is revalidated
 <If "%{REQUEST_URI} =~ m#^/assets/#">

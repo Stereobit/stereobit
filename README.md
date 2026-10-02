@@ -35,6 +35,6 @@ SSH_URL=user@host:/path/to/webroot/
 ## Layout
 
 - `src/index.html`, `src/404.html`: the pages. There is no JavaScript.
-- `src/css/basic.css`: styles in plain CSS (nesting included). Vite compiles them with Lightning CSS, which flattens nesting and adds vendor prefixes for the browsers in `.browserslistrc`.
+- `src/css/main.css`: styles in plain CSS (nesting included). Vite compiles them with Lightning CSS, which flattens nesting and adds vendor prefixes for the browsers in `.browserslistrc`.
 - Fonts (Karla, Rubik) are self-hosted from `@fontsource-variable/*` and bundled into `build/assets/`.
-- `src/rootfiles/`: copied unchanged to the web root. Includes the favicons and `.htaccess`, which handles the short-link redirects, serving the pre-compressed `.br`/`.gz` files, caching and security headers.
+- `src/rootfiles/`: copied unchanged to the web root. Includes the favicons and `.htaccess`, which handles the short-link redirects, caching and security headers. Compression is left to the server.
