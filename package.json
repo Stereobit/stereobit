@@ -20,8 +20,7 @@
     "deploy": "npm run clean && npm run build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ $(grep SSH_URL .env | cut -d '=' -f2)"
   },
   "devDependencies": {
-    "@fontsource-variable/karla": "^5.3.0",
-    "@fontsource-variable/rubik": "^5.3.0",
+    "@fontsource-variable/schibsted-grotesk": "^5.3.0",
     "browserslist": "^4.29.3",
     "lightningcss": "^1.33.0",
     "prettier": "^3.9.9",
