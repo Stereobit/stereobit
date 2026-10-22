@@ -1,40 +1,23 @@
-# stereob.it
+# Tobias Otte
 
-Source for [stereob.it](https://stereob.it), a single static page built with [Vite](https://vite.dev).
+Co-founder & CTO at [Bead](https://usebead.ai). San Francisco & London.
 
-## Requirements
+> We are about to do far more than anyone can see.
+> _And still want to be the one in charge._
 
-Node.js 22.12 or newer. The pinned version is in `.nvmrc`:
+One thing I learned as an engineer is that you don't trust a system because you've read every line of code in it. You trust it because you built the means to know when it's wrong. Soon that lesson will apply to all work, not just software. With output scaling 100x, we have to rethink how we know things are under control, without seeing everything.
 
-```sh
-nvm use
-npm install
-```
+## Built
 
-## Development
+- [Bead](https://usebead.ai) · Co-founder
+- [11x](https://11x.ai) · Founding Engineer
+- [Gaia](https://gaiafamily.com) · Head of Engineering
+- [Learnerbly](https://www.learnerbly.com) · CTO
+- [Lyst](https://www.lyst.com) · Founding Engineer
+- [XING](https://www.xing.com) · Software Engineer
 
-```sh
-npm start         # dev server on http://localhost:3000
-npm run build     # production build into build/
-npm run preview   # serve build/ locally
-npm run format    # format with Prettier
-```
+## Find me
 
-## Deployment
+[stereob.it](https://stereob.it) · [t@stereob.it](mailto:t@stereob.it) · [LinkedIn](https://www.linkedin.com/in/tobiasotte) · [X](https://twitter.com/stereobit)
 
-```sh
-npm run deploy
-```
-
-This cleans, builds and rsyncs `build/` to the server. It reads the target from a `.env` file, which is not committed:
-
-```sh
-SSH_URL=user@host:/path/to/webroot/
-```
-
-## Layout
-
-- `src/index.html`, `src/404.html`: the pages. There is no JavaScript.
-- `src/css/main.css`: styles in plain CSS (nesting included). Vite compiles them with Lightning CSS, which flattens nesting and adds vendor prefixes for the browsers in `.browserslistrc`.
-- Schibsted Grotesk (upright and italic) is self-hosted from `@fontsource-variable/*` and bundled into `build/assets/`.
-- `src/rootfiles/`: copied unchanged to the web root. Includes the favicons and `.htaccess`, which handles the short-link redirects, caching and security headers. Compression is left to the server.
+<sub>This repository is also the source for [stereob.it](https://stereob.it). Developer notes are in [DEVELOPMENT.md](DEVELOPMENT.md).</sub>
