@@ -15,7 +15,7 @@ Header set Cache-Control "public, max-age=31536000, immutable"
 Header set Cache-Control "no-cache"
 </Else>
 
-Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'self'; font-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
+Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; img-src 'self'; style-src 'self'; font-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
 Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 Header always set X-Frame-Options "DENY"
 Header always set X-Content-Type-Options "nosniff"
