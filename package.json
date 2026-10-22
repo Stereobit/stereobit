@@ -10,6 +10,19 @@
   "engines": {
     "node": ">=22.12"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.12.1",
+      "onFail": "warn"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "12.2.1",
+      "onFail": "warn"
+    }
+  },
+  "packageManager": "npm@12.2.1",
   "scripts": {
     "start": "vite",
     "dev": "vite",
