@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="/css/main.css" />
   </head>
   <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
     <main>
       <p class="name">
         <b>Tobias Otte</b> · Co-founder &amp; CTO at
@@ -86,10 +87,11 @@
       <footer>
         <span>
           <a href="http://creativecommons.org/licenses/by-sa/3.0/">&copy;</a>
-          2006 – 2026 Tobias Otte
+          2006 – 2026 <span id="spring">Tobias Otte</span>
         </span>
         <span>San Francisco &amp; London</span>
       </footer>
     </main>
+    <script type="module" src="/js/background.js"></script>
   </body>
 </html>
