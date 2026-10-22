@@ -54,7 +54,7 @@ function resize() {
 function geometry() {
   const r = spring.getBoundingClientRect()
   if (r.width) {
-    src.x = Math.round(r.right + 8)
+    src.x = Math.round(r.right + 14)
     src.y = r.top + r.height * 0.55
     src.left = r.left
     src.width = r.width
