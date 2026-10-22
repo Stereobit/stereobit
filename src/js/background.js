@@ -1,83 +1,97 @@
-// Background: threads spring from the name in the footer and float up along an
-// exponential curve. Each thread is a horizontal line that grows as messages
-// are appended to its right end. Hovering a thread shows its cross-references.
+// Background: threads spring from a dot beside the name in the footer and
+// float straight up, one row pitch apart, while messages are appended to
+// their right end. Moving the cursor onto a thread opens it: its blocks
+// spread into labelled chips, the threads it refers to open with it, and
+// arcs join them. A click keeps one thread open until it fades out at the top.
 
 const canvas = document.getElementById("bg")
 const spring = document.getElementById("spring")
 const ctx = canvas.getContext("2d")
-
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
 
-// Colour along a thread, by distance from its anchor: navy, teal, gold, light
-// gold for the solid body, then sand and pale lavender for the message tail.
-const SOLID = [
+// Geometry.
+const THICK = 8 // thread thickness at rest
+const PITCH = 13 // vertical distance between threads
+const SEGMENTS = [0, 16, 40, 110, 160] // body colour bands, px from anchor
+const TAIL_SPLIT = 240 // tail blocks beyond this are the far colour
+const MAX_MESSAGES = 320
+
+// Timing, in seconds.
+const FLOAT_IN = 1.5 // a new message glides in from the right
+const LAUNCH = 0.9 // a new thread slides out of the spring dot
+const OPEN_SPEED = 7 // how fast a thread opens and closes
+const POINTER_IDLE = 6 // hover is dropped after the pointer rests this long
+
+// Opening: thickness, text and lift grow with r.open in [0, 1].
+const OPEN_SCALE = 2 // extra thickness when fully open
+const OPEN_FONT = 0.4 // extra text size when fully open
+const OPEN_LIFT = 6 // px raised when fully open
+const FONT_FAMILY = "ui-monospace, Menlo, Consolas, monospace"
+
+// Colours. Body bands run navy, teal, gold, light gold; the tail is sand then
+// pale lavender. Arriving messages start grey-blue and settle into their band.
+const BANDS = [
   [30, 58, 76],
   [52, 96, 112],
   [183, 121, 31],
   [222, 178, 96],
+  [216, 200, 168],
+  [200, 204, 218],
 ]
-const TAIL_NEAR = [216, 200, 168]
-const TAIL_FAR = [200, 204, 218]
+const NAVY = BANDS[0]
+const GOLD = BANDS[2]
 const ARRIVING = [168, 176, 200]
-const HIGHLIGHT = [183, 121, 31]
-const SEGMENTS = [0, 16, 40, 110, 160]
-
-const THICK = 8
-const PITCH = 13
-const MAX_MESSAGES = 320
-const FLOAT_IN = 1.5
-const LAUNCH = 0.9
-const BASE_ALPHA = 0.8
-const OPEN_SPEED = 7
-const FONT_FAMILY = "ui-monospace, Menlo, Consolas, monospace"
-const FONT = `10px ${FONT_FAMILY}`
 const CREAM = [244, 243, 239]
-// Copy for a lifted thread. The four body blocks tell one task's story in
-// order: the task, where it looked, how it reasoned, how it checked. The
-// tail blocks are outcomes.
-const TASKS = [
-  "reconcile q3",
-  "audit claim 55c0",
-  "review policy v14",
-  "settle payout 3e1",
-  "rebalance shard 07",
-  "verify invoice 4411",
-  "triage alert 212",
-  "merge change 88",
-  "close ticket 9f2",
-  "replay run 1a7",
-  "price quote 0x3d",
-  "renew contract b7",
-]
-const SOURCES = [
-  "read ledger",
-  "fetch records",
-  "load policy",
-  "pull evidence",
-  "query history",
-  "open spec",
-  "scan logs",
-  "ask registry",
-]
-const REASONS = [
-  "compare 3 rows",
-  "plan 4 steps",
-  "derive total",
-  "infer scope",
-  "draft decision",
-  "trace cause",
-  "weigh 2 options",
-  "simulate change",
-]
-const CHECKS = [
-  "verify sums",
-  "cross-check",
-  "test 12/12",
-  "cite sources",
-  "check limits",
-  "second opinion",
-  "replay diff",
-  "sign off",
+const BASE_ALPHA = 0.8
+
+// Copy for an open thread. The body blocks tell one task's story in order:
+// the task, where it looked, how it reasoned, how it checked. Tail blocks
+// are outcomes.
+const STORY = [
+  [
+    "reconcile q3",
+    "audit claim 55c0",
+    "review policy v14",
+    "settle payout 3e1",
+    "rebalance shard 07",
+    "verify invoice 4411",
+    "triage alert 212",
+    "merge change 88",
+    "close ticket 9f2",
+    "replay run 1a7",
+    "price quote 0x3d",
+    "renew contract b7",
+  ],
+  [
+    "read ledger",
+    "fetch records",
+    "load policy",
+    "pull evidence",
+    "query history",
+    "open spec",
+    "scan logs",
+    "ask registry",
+  ],
+  [
+    "compare 3 rows",
+    "plan 4 steps",
+    "derive total",
+    "infer scope",
+    "draft decision",
+    "trace cause",
+    "weigh 2 options",
+    "simulate change",
+  ],
+  [
+    "verify sums",
+    "cross-check",
+    "test 12/12",
+    "cite sources",
+    "check limits",
+    "second opinion",
+    "replay diff",
+    "sign off",
+  ],
 ]
 const OUTCOMES = [
   "ok 84ms",
@@ -93,14 +107,14 @@ const OUTCOMES = [
   "approved",
   "logged",
 ]
-const pick = (list) => list[Math.floor(Math.random() * list.length)]
 
+// State.
 let W = 0
 let H = 0
-let Lx = 0
-let Ly = 0
-let speed = 0
-const src = { x: 0, y: 0, left: 0, width: 0 }
+let Lx = 0 // horizontal reach of the thread curve
+let Ly = 0 // height a thread rises before it is gone
+let speed = 0 // px per second upwards
+const src = { x: 0, y: 0 } // where threads start, beside the footer name
 const rows = []
 let spawnAcc = 0
 const pointer = { x: -1e4, y: -1e4, on: false, at: 0, moved: false }
@@ -113,6 +127,8 @@ const mix = (a, b, k) => [
   a[1] + (b[1] - a[1]) * k,
   a[2] + (b[2] - a[2]) * k,
 ]
+const pick = (list) => list[Math.floor(Math.random() * list.length)]
+const easeOut = (k) => 1 - Math.pow(1 - k, 3)
 
 function resize() {
   const dpr = Math.min(2, devicePixelRatio || 1)
@@ -124,13 +140,12 @@ function resize() {
   speed = Math.max(H, 200) / 48
 }
 
+// The spring point follows the footer name, so threads scroll with the page.
 function geometry() {
   const r = spring.getBoundingClientRect()
   if (r.width) {
     src.x = Math.round(r.right + 14)
     src.y = r.top + r.height * 0.55
-    src.left = r.left
-    src.width = r.width
   } else {
     src.x = Math.min(W * 0.04, 60)
     src.y = H * 0.95
@@ -139,23 +154,20 @@ function geometry() {
   Ly = Math.max(H * 0.9, src.y + (scrollY || 0) + 60)
 }
 
-const tOf = (dy) => Math.pow(Math.max(0, dy / Ly), 1 / 2.7)
-const easeOut = (k) => 1 - Math.pow(1 - k, 3)
+// --- Threads ---------------------------------------------------------------
 
-// Launch progress: 0 while still inside the name, 1 once fully out.
-function launched(r, now) {
-  return easeOut(Math.min(1, (now - r.start) / LAUNCH))
-}
+// Launch progress: 0 while still at the spring dot, 1 once fully out.
+const launched = (r, now) => easeOut(Math.min(1, (now - r.start) / LAUNCH))
 
+// Anchor (left end) of a thread. Without `now` the launch slide is ignored.
 function anchor(r, now) {
   const e = now === undefined ? 1 : launched(r, now)
-  const x = src.x + Lx * Math.pow(r.t, 0.7) - 16 * (1 - e)
-  return [x, src.y - r.dy]
+  return [src.x + Lx * Math.pow(r.t, 0.7) - 16 * (1 - e), src.y - r.dy]
 }
 
 function addMessage(r, now) {
-  if (r.n >= MAX_MESSAGES) return
   const n = r.n
+  if (n >= MAX_MESSAGES) return
   if (n && r.pos[n - 1] > Math.min(520, W * 0.5)) return
   r.w[n] = 3 + Math.round(Math.random() * 3)
   r.pos[n] = n ? r.pos[n - 1] + r.w[n - 1] + 2 : 0
@@ -165,30 +177,27 @@ function addMessage(r, now) {
 
 function spawn(now) {
   const r = {
-    dy: 0,
-    t: 0,
-    n: 0,
-    rate: 1.1 + Math.random() * 1.4,
-    next: 0.12,
-    burst: 3 + Math.floor(Math.random() * 3),
+    dy: 0, // distance risen
+    t: 0, // 0..1 progress along the curve
+    n: 0, // message count
+    w: new Float32Array(MAX_MESSAGES), // message widths
+    pos: new Float32Array(MAX_MESSAGES), // message offsets from the anchor
+    born: new Float32Array(MAX_MESSAGES), // arrival times
+    seed: new Float32Array(MAX_MESSAGES), // per-message randomness, -0.5..0.5
+    rate: 1.1 + Math.random() * 1.4, // messages per second, roughly
+    next: 0.12, // seconds until the next message
+    burst: 3 + Math.floor(Math.random() * 3), // first messages come together
     start: now,
-    w: new Float32Array(MAX_MESSAGES),
-    pos: new Float32Array(MAX_MESSAGES),
-    born: new Float32Array(MAX_MESSAGES),
-    seed: new Float32Array(MAX_MESSAGES),
-    refs: [],
-    open: 0,
+    story: STORY.map(pick),
+    refs: [], // { row, seg }: threads this one refers to, by body block
+    open: 0, // 0 closed .. 1 open
     pinned: false,
-    story: [pick(TASKS), pick(SOURCES), pick(REASONS), pick(CHECKS)],
   }
   for (let i = 0; i < MAX_MESSAGES; i++) r.seed[i] = Math.random() - 0.5
   addMessage(r, now)
   if (rows.length > 4) {
     for (let i = 0; i < 2; i++) {
-      r.refs.push({
-        row: rows[Math.floor(Math.random() * rows.length)],
-        seg: Math.floor(Math.random() * 4),
-      })
+      r.refs.push({ row: pick(rows), seg: Math.floor(Math.random() * 4) })
     }
   }
   rows.push(r)
@@ -196,6 +205,7 @@ function spawn(now) {
 }
 
 function step(now, dt) {
+  // Spawning is tied to the rise speed so threads sit exactly PITCH apart.
   spawnAcc += (dt * speed) / PITCH
   while (spawnAcc > 1) {
     spawnAcc--
@@ -205,7 +215,7 @@ function step(now, dt) {
   for (let i = rows.length - 1; i >= 0; i--) {
     const r = rows[i]
     r.dy += dt * speed
-    r.t = tOf(r.dy)
+    r.t = Math.pow(Math.max(0, r.dy / Ly), 1 / 2.7)
     if (r.dy > Ly + 20) {
       rows.splice(i, 1)
       continue
@@ -214,7 +224,6 @@ function step(now, dt) {
     while (r.next <= 0) {
       addMessage(r, now)
       if (r.burst > 0) {
-        // The first few messages spring out together.
         r.burst--
         r.next += 0.07 + Math.random() * 0.05
       } else {
@@ -228,7 +237,8 @@ function step(now, dt) {
   }
 }
 
-// Whether a thread is under the pointer, with a little vertical tolerance.
+// --- Hover -----------------------------------------------------------------
+
 function underPointer(r, tol) {
   const [ax, ay] = anchor(r)
   const end = r.n ? r.pos[r.n - 1] + r.w[r.n - 1] : 0
@@ -239,17 +249,15 @@ function underPointer(r, tol) {
   )
 }
 
-// Hover follows the pointer, not the stream: a thread opens only when the
-// cursor moves onto it, and stays open while it is still underneath. Threads
-// that float under a resting cursor are left alone.
+// Hover follows the pointer, not the stream: a thread is picked only when the
+// cursor moves, and stays hovered while it is still underneath. Threads that
+// float under a resting cursor are left alone. The pick reaches half a pitch
+// each way, so the gaps between threads count too.
 function updateHovered() {
-  if (!pointer.on || performance.now() - pointer.at > 6000) {
+  if (!pointer.on || performance.now() - pointer.at > POINTER_IDLE * 1000) {
     hovered = null
-    return
-  }
-  if (pointer.moved) {
+  } else if (pointer.moved) {
     pointer.moved = false
-    // Half a pitch each way, so the gaps between threads count too.
     let best = PITCH / 2 + 0.5
     hovered = null
     for (const r of rows) {
@@ -267,16 +275,97 @@ function updateHovered() {
   }
 }
 
+// --- Blocks ----------------------------------------------------------------
+
+// Copy and text widths for a thread, measured once each.
+function ensureLabels(r) {
+  ctx.font = `10px ${FONT_FAMILY}`
+  if (!r.label) {
+    r.label = []
+    r.lw = []
+    r.storyW = r.story.map((t) => ctx.measureText(t).width)
+  }
+  for (let j = r.label.length; j < r.n; j++) {
+    const i = Math.floor((r.seed[j] + 0.5) * OUTCOMES.length) % OUTCOMES.length
+    r.label[j] = OUTCOMES[i]
+    r.lw[j] = ctx.measureText(OUTCOMES[i]).width
+  }
+}
+
+// Per-thread drawing metrics, in a shared scratch object.
+const m = { ax: 0, ay: 0, open: 0, fz: 1, pad: 7, gap: 2, settled: 0, len: 0 }
+function measure(r, now) {
+  const [px, py] = anchor(r, now)
+  m.open = r.open
+  m.fz = 1 + OPEN_FONT * m.open
+  m.ax = Math.round(px)
+  m.ay = Math.round(py) - Math.round(OPEN_LIFT * m.open)
+  m.pad = Math.round(7 * m.fz)
+  m.gap = Math.round(2 * m.fz)
+  let settled = r.n
+  while (settled > 0 && now - r.born[settled - 1] < FLOAT_IN) settled--
+  m.settled = settled
+  m.len = settled ? r.pos[settled - 1] + r.w[settled - 1] : 0
+  return m
+}
+
+// Walk the blocks a thread is drawn as: its body segments, the settled tail
+// messages, then the messages still gliding in. As the thread opens, the same
+// blocks spread out from the anchor as chips wide enough for their copy, so
+// the first few stay on screen and the rest push off to the right.
+// fn(x, w, band, j, label, textWidth) is called per block; j is the message
+// index, or -1 for a body segment. Returning false stops the walk.
+function eachBlock(r, now, fn) {
+  measure(r, now)
+  const { ax, open, fz, pad, gap, settled, len } = m
+  if (open > 0) ensureLabels(r)
+  let chipX = 0
+  const emit = (p0, p1, band, j, label, lw) => {
+    const chip = Math.round(lw * fz + pad * 2)
+    const x = ax + p0 * (1 - open) + chipX * open
+    const w = (p1 - p0) * (1 - open) + chip * open
+    chipX += chip + gap
+    return fn(x, w, band, j, label, lw * fz)
+  }
+  for (let s = 0; s < 4; s++) {
+    const to = Math.min(SEGMENTS[s + 1], len)
+    if (to <= SEGMENTS[s]) break
+    const label = open > 0 ? r.story[s] : ""
+    const lw = open > 0 ? r.storyW[s] : 0
+    if (emit(SEGMENTS[s], to, s, -1, label, lw) === false) return
+  }
+  for (let j = 0; j < r.n; j++) {
+    const p = r.pos[j]
+    if (j < settled && p < SEGMENTS[4]) continue
+    const band = p < TAIL_SPLIT ? 4 : 5
+    const label = open > 0 ? r.label[j] : ""
+    const lw = open > 0 ? r.lw[j] : 0
+    if (emit(p, p + r.w[j], band, j, label, lw) === false) return
+  }
+}
+
+// Centre x, y and band of a thread's seg-th body block (or its last one).
+function bodyBlock(r, now, seg) {
+  let hit = null
+  eachBlock(r, now, (x, w, band, j) => {
+    if (j !== -1) return false
+    hit = [x + w / 2, m.ay, band]
+    return seg-- > 0
+  })
+  return hit
+}
+
+// --- Drawing ---------------------------------------------------------------
+
 function draw(now, dt) {
   ctx.clearRect(0, 0, W, H)
-  updateHovered()
-  let pulse = 0
   ctx.lineCap = "butt"
-
+  updateHovered()
   if ((hovered !== null) !== cursorOn) {
     cursorOn = hovered !== null
     document.body.style.cursor = cursorOn ? "pointer" : ""
   }
+
   // Hovered and pinned threads open, and so does every thread they refer to.
   const wanted = new Set()
   for (const r of rows) {
@@ -297,202 +386,76 @@ function draw(now, dt) {
     const y = Math.round(src.y - r.dy)
     if (y < -2 || y > H + 2) continue
     const e = launched(r, now)
-    const reach = W * e
-    const x0 = Math.max(0, dotX - reach)
-    const x1 = Math.min(W, dotX + reach)
-    ctx.fillStyle = rgba(SOLID[0], 0.035 + (1 - e) * 0.09)
+    const x0 = Math.max(0, dotX - W * e)
+    const x1 = Math.min(W, dotX + W * e)
+    ctx.fillStyle = rgba(NAVY, 0.035 + (1 - e) * 0.09)
     ctx.fillRect(x0, y, x1 - x0, 1)
   }
 
-  // Lifted threads are drawn last so they sit on top of their neighbours.
-  const lifted = []
+  // Open threads are drawn last so they sit on top; their arcs go underneath
+  // all of them so an arc never crosses a chip.
+  let pulse = 0
+  const open = []
   for (const r of rows) {
-    if (r.open > 0) lifted.push(r)
-    else pulse = Math.max(pulse, drawRow(r, now))
+    if (r.open > 0) open.push(r)
+    else pulse = Math.max(pulse, drawThread(r, now))
   }
-  // Arcs go under every lifted thread so they never cross a chip.
-  for (const r of lifted) {
-    if (r === hovered || r.pinned) {
-      drawReferences(r, r.open * Math.min(1, (Ly - r.dy) / 80), now)
-    }
+  for (const r of open) {
+    if (r === hovered || r.pinned) drawReferences(r, now)
   }
-  for (const r of lifted) pulse = Math.max(pulse, drawRow(r, now))
+  for (const r of open) pulse = Math.max(pulse, drawThread(r, now))
 
   // The spring dot, just right of the name, swells on every launch.
-  ctx.fillStyle = rgba(HIGHLIGHT, 0.75 + pulse * 0.25)
+  ctx.fillStyle = rgba(GOLD, 0.75 + pulse * 0.25)
   ctx.beginPath()
-  ctx.arc(src.x - 5, Math.round(src.y), 2.4 + pulse * 2, 0, Math.PI * 2)
+  ctx.arc(dotX, Math.round(src.y), 2.4 + pulse * 2, 0, Math.PI * 2)
   ctx.fill()
 }
 
-// Copy and text widths for a thread, measured once each.
-function ensureLabels(r) {
-  ctx.font = FONT
-  if (!r.label) {
-    r.label = []
-    r.lw = []
-    r.storyW = r.story.map((t) => ctx.measureText(t).width)
-  }
-  for (let j = r.label.length; j < r.n; j++) {
-    const text =
-      OUTCOMES[
-        Math.floor((r.seed[j] + 0.5) * OUTCOMES.length) % OUTCOMES.length
-      ]
-    r.label[j] = text
-    r.lw[j] = ctx.measureText(text).width
-  }
-}
-
-// The blocks a thread is drawn as: its body segments, the settled tail
-// messages and the messages still gliding in. As the thread opens, the same
-// blocks spread out from the anchor as chips wide enough for their copy, so
-// the first few stay on screen and the rest push off to the right.
-function layout(r, now) {
-  const [px, py] = anchor(r, now)
-  const hl = r.open
-  const fz = 1 + 0.4 * hl
-  const ax = Math.round(px)
-  const ay = Math.round(py) - Math.round(6 * hl)
-  let recent = 0
-  while (recent < r.n && now - r.born[r.n - 1 - recent] < FLOAT_IN) recent++
-  const settled = r.n - recent
-  const len = settled > 0 ? r.pos[settled - 1] + r.w[settled - 1] : 0
-  ensureLabels(r)
-  const pad = Math.round(7 * fz)
-  const gap = Math.round(2 * fz)
-  const blocks = []
-  let chipX = 0
-  const push = (p0, p1, band, label, lw, j) => {
-    const cw = Math.round(lw * fz + pad * 2)
-    blocks.push({
-      p0,
-      band,
-      label,
-      lw: lw * fz,
-      j,
-      x: ax + p0 * (1 - hl) + chipX * hl,
-      w: (p1 - p0) * (1 - hl) + cw * hl,
-    })
-    chipX += cw + gap
-  }
-  for (let s = 0; s < 4; s++) {
-    const from = SEGMENTS[s]
-    const to = Math.min(SEGMENTS[s + 1], len)
-    if (to <= from) break
-    push(from, to, s, r.story[s], r.storyW[s], -1)
-  }
-  for (let j = 0; j < r.n; j++) {
-    const p = r.pos[j]
-    if (j < settled && p < 160) continue
-    push(p, p + r.w[j], p < 240 ? 4 : 5, r.label[j], r.lw[j], j)
-  }
-  return { ax, ay, fz, pad, settled, blocks }
-}
-
-// One of a layout's body blocks, or the last one that exists.
-function bodyBlock(L, seg) {
-  let b = null
-  for (const c of L.blocks) {
-    if (c.j !== -1) break
-    b = c
-    if (seg-- === 0) break
-  }
-  return b
-}
-
 // One thread. Returns the launch glint strength for the spring dot.
-function drawRow(r, now) {
-  const [px, py] = anchor(r, now)
-  const ax = Math.round(px)
-  const ay0 = Math.round(py)
-  if (ay0 < -10 || ay0 > H + 10) return 0
+function drawThread(r, now) {
+  const { ax, ay, open, fz, pad, settled } = measure(r, now)
+  if (ay < -16 || ay > H + 10) return 0
   const launch = launched(r, now)
-
-  let recent = 0
-  while (recent < r.n && now - r.born[r.n - 1 - recent] < FLOAT_IN) recent++
-  const settled = r.n - recent
-  const len = settled > 0 ? r.pos[settled - 1] + r.w[settled - 1] : 0
   const alpha =
     BASE_ALPHA * (0.22 + 0.78 * Math.min(1, r.t * 2.5)) * (0.4 + 0.6 * launch)
-  const hl = r.open
-  // A lifted thread is drawn bigger, raised, and with a soft shadow.
-  const sc = 1 + 2 * hl
-  const fz = 1 + 0.4 * hl
-  const T = THICK * sc
-  const ay = ay0 - Math.round(6 * hl)
-  if (hl > 0) {
-    ctx.shadowColor = rgba(SOLID[0], 0.3 * hl)
-    ctx.shadowBlur = 24 * hl
-    ctx.shadowOffsetY = 8 * hl
-  }
+  const T = THICK * (1 + OPEN_SCALE * open)
+  const textAlpha = Math.max(0, (open - 0.5) / 0.5)
 
-  if (hl < 0.02) {
-    // Solid body, in colour bands by distance from the anchor.
-    ctx.lineWidth = T
-    for (let s = 0; s < 4; s++) {
-      const from = SEGMENTS[s]
-      const to = Math.min(SEGMENTS[s + 1], len)
-      if (to <= from) break
-      ctx.strokeStyle = rgba(SOLID[s], alpha)
-      ctx.beginPath()
-      ctx.moveTo(ax + from, ay)
-      ctx.lineTo(ax + to, ay)
-      ctx.stroke()
-    }
-
-    // Message tail: one block per message with a fixed gap.
-    for (let j = 0; j < settled; j++) {
-      const p = r.pos[j]
-      if (p < 160) continue
-      ctx.fillStyle = rgba(p < 240 ? TAIL_NEAR : TAIL_FAR, alpha * 0.9)
-      ctx.fillRect(ax + p, ay - T / 2, r.w[j], T)
-    }
-
-    // Messages still floating in from the right.
-    for (let j = settled; j < r.n; j++) {
-      const k = Math.min(1, (now - r.born[j]) / FLOAT_IN)
-      const e = 1 - Math.pow(1 - k, 3)
-      const dist = (70 + r.seed[j] * 50) * (1 - e)
-      const x = ax + r.pos[j] + dist
-      const y = ay + r.seed[(j * 7 + 3) % MAX_MESSAGES] * 14 * (1 - e)
-      ctx.fillStyle = rgba(ARRIVING, alpha * (0.25 + 0.75 * e))
-      ctx.fillRect(Math.round(x), Math.round(y) - T / 2, r.w[j], T)
-    }
-  } else {
-    // Lifted: the thread's blocks spread into chips that carry its copy.
-    const L = layout(r, now)
-    ctx.font = `${(10 * L.fz).toFixed(1)}px ${FONT_FAMILY}`
+  if (open > 0) {
+    ctx.shadowColor = rgba(NAVY, 0.3 * open)
+    ctx.shadowBlur = 24 * open
+    ctx.shadowOffsetY = 8 * open
+    ctx.font = `${(10 * fz).toFixed(1)}px ${FONT_FAMILY}`
     ctx.textBaseline = "middle"
-    const textA = Math.max(0, (hl - 0.5) / 0.5)
-    for (const b of L.blocks) {
-      if (b.x > W) break
-      const base =
-        b.band < 4 ? SOLID[b.band] : b.band === 4 ? TAIL_NEAR : TAIL_FAR
-      let x = b.x
-      let y = ay
-      let a = alpha
-      let c = base
-      if (b.j >= settled) {
-        const k = Math.min(1, (now - r.born[b.j]) / FLOAT_IN)
-        const e = 1 - Math.pow(1 - k, 3)
-        x += (70 + r.seed[b.j] * 50) * (1 - e)
-        y += r.seed[(b.j * 7 + 3) % MAX_MESSAGES] * 14 * (1 - e)
-        a *= 0.25 + 0.75 * e
-        c = mix(ARRIVING, base, e)
-      }
-      x = Math.round(x)
-      y = Math.round(y)
-      ctx.fillStyle = rgba(c, a)
-      ctx.fillRect(x, y - T / 2, b.w, T)
-      if (textA > 0 && b.w > b.lw + 6) {
-        ctx.fillStyle = rgba(b.band < 3 ? CREAM : SOLID[0], a * textA)
-        ctx.fillText(b.label, x + L.pad, y + 1)
-      }
-    }
   }
+
+  eachBlock(r, now, (x, w, band, j, label, lw) => {
+    if (x > W) return false
+    const base = BANDS[band]
+    let y = ay
+    let a = band < 4 ? alpha : alpha * 0.9
+    let c = base
+    if (j >= settled) {
+      // Still gliding in from the right, settling into its band colour.
+      const e = easeOut(Math.min(1, (now - r.born[j]) / FLOAT_IN))
+      x += (70 + r.seed[j] * 50) * (1 - e)
+      y += r.seed[(j * 7 + 3) % MAX_MESSAGES] * 14 * (1 - e)
+      a *= 0.25 + 0.75 * e
+      c = mix(ARRIVING, base, e)
+    }
+    x = Math.round(x)
+    y = Math.round(y)
+    ctx.fillStyle = rgba(c, a)
+    ctx.fillRect(x, y - T / 2, w, T)
+    if (textAlpha > 0 && w > lw + 6) {
+      ctx.fillStyle = rgba(band < 3 ? CREAM : NAVY, a * textAlpha)
+      ctx.fillText(label, x + pad, y + 1)
+    }
+  })
 
   // Anchor tick at the thread's start.
-  ctx.strokeStyle = rgba(SOLID[0], alpha * 0.8)
+  ctx.strokeStyle = rgba(NAVY, alpha * 0.8)
   ctx.lineWidth = 2
   ctx.beginPath()
   ctx.moveTo(ax + 1, ay - T)
@@ -504,50 +467,43 @@ function drawRow(r, now) {
 
   // Launch glint: the new thread glows gold from the spring dot outward,
   // with a short streak running ahead of its end, then fades.
-  if (launch < 1) {
-    const g = 1 - launch
-    const end = r.n ? r.pos[r.n - 1] + r.w[r.n - 1] : 0
-    ctx.strokeStyle = rgba(HIGHLIGHT, g * 0.7)
-    ctx.lineWidth = THICK
-    ctx.beginPath()
-    ctx.moveTo(src.x - 4, ay)
-    ctx.lineTo(ax + end, ay)
-    ctx.stroke()
-    ctx.strokeStyle = rgba(HIGHLIGHT, g * 0.8)
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(ax + end, ay)
-    ctx.lineTo(ax + end + 24 * g + 6, ay)
-    ctx.stroke()
-    return g
-  }
-  return 0
+  if (launch >= 1) return 0
+  const g = 1 - launch
+  const end = ax + (r.n ? r.pos[r.n - 1] + r.w[r.n - 1] : 0)
+  ctx.strokeStyle = rgba(GOLD, g * 0.7)
+  ctx.lineWidth = THICK
+  ctx.beginPath()
+  ctx.moveTo(src.x - 4, ay)
+  ctx.lineTo(end, ay)
+  ctx.stroke()
+  ctx.strokeStyle = rgba(GOLD, g * 0.8)
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(end, ay)
+  ctx.lineTo(end + 24 * g + 6, ay)
+  ctx.stroke()
+  return g
 }
 
-// Cross-reference arcs from a thread's blocks to blocks of the threads it
-// refers to, in the colour of the block they leave from.
-function drawReferences(r, fade, now) {
-  const Lr = layout(r, now)
+// Arcs from a thread's body blocks to body blocks of the threads it refers
+// to, in the colour of the block they leave from, between the facing edges.
+function drawReferences(r, now) {
+  const fade = r.open * Math.min(1, (Ly - r.dy) / 80)
   ctx.lineWidth = 2
-  for (let i = 0; i < r.refs.length; i++) {
-    const ref = r.refs[i]
+  r.refs.forEach((ref, i) => {
     const o = ref.row
-    if (o === r || !rows.includes(o)) continue
-    // Both ends sit on body blocks, so the arc always lands on the chips
-    // that stay on screen when the threads open.
-    const Lo = layout(o, now)
-    const a = bodyBlock(Lr, (ref.seg + (i ? 1 : 3)) % 4)
-    const b = bodyBlock(Lo, ref.seg)
-    if (!a || !b) continue
-    const c = SOLID[a.band]
-    // Leave from the chip edges that face each other.
-    const ha = (THICK * (1 + 2 * r.open)) / 2
-    const hb = (THICK * (1 + 2 * o.open)) / 2
-    const up = Lo.ay < Lr.ay
-    const ax = Math.round(a.x + a.w / 2)
-    const ay = Lr.ay + (up ? -ha : ha)
-    const bx = Math.round(b.x + b.w / 2)
-    const by = Lo.ay + (up ? hb : -hb)
+    if (o === r || !rows.includes(o)) return
+    const a = bodyBlock(r, now, (ref.seg + (i ? 1 : 3)) % 4)
+    const b = bodyBlock(o, now, ref.seg)
+    if (!a || !b) return
+    const up = b[1] < a[1]
+    const ha = (THICK * (1 + OPEN_SCALE * r.open)) / 2
+    const hb = (THICK * (1 + OPEN_SCALE * o.open)) / 2
+    const ax = Math.round(a[0])
+    const ay = a[1] + (up ? -ha : ha)
+    const bx = Math.round(b[0])
+    const by = b[1] + (up ? hb : -hb)
+    const c = BANDS[a[2]]
     ctx.strokeStyle = rgba(c, 0.9 * fade)
     ctx.beginPath()
     ctx.moveTo(ax, ay)
@@ -559,14 +515,18 @@ function drawReferences(r, fade, now) {
     )
     ctx.stroke()
     ctx.fillStyle = rgba(c, 0.95 * fade)
-    ctx.beginPath()
-    ctx.arc(bx, by, 3, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(ax, ay, 3, 0, Math.PI * 2)
-    ctx.fill()
-  }
+    for (const [x, y] of [
+      [ax, ay],
+      [bx, by],
+    ]) {
+      ctx.beginPath()
+      ctx.arc(x, y, 3, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  })
 }
+
+// --- Lifecycle -------------------------------------------------------------
 
 // Fill the page as if the stream had been running all along.
 function seed() {
@@ -595,16 +555,15 @@ function onPointer(e) {
   pointer.moved = true
 }
 
-// Click a thread to keep it open (one at a time); it still rises and fades
-// out with the thread. Clicking it again, or elsewhere, lets it go.
+// Click a thread to keep it open, one at a time; it still rises and fades
+// out. Clicking it again, or empty space, lets it go.
 function onClick(e) {
   if (e.target.closest("a, button")) return
   onPointer(e)
   updateHovered()
-  const r = hovered
-  const pin = r !== null && !r.pinned
-  for (const x of rows) x.pinned = false
-  if (pin) r.pinned = true
+  const pin = hovered !== null && !hovered.pinned
+  for (const r of rows) r.pinned = false
+  if (pin) hovered.pinned = true
 }
 
 resize()
