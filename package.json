@@ -30,7 +30,7 @@
     "preview": "vite preview",
     "clean": "rm -rf ./build",
     "format": "prettier --write .",
-    "deploy": "npm run clean && npm run build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ $(grep SSH_URL .env | cut -d '=' -f2)"
+    "deploy": ". ./.env && : \"${SSH_URL:?SSH_URL is not set in .env}\" && npm run clean && npm run build && rsync -avz --delete --exclude 'logs' --exclude 'usage' build/ \"$SSH_URL\""
   },
   "devDependencies": {
     "@fontsource-variable/schibsted-grotesk": "^5.3.0",
