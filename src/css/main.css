@@ -131,6 +131,20 @@ section ul {
   gap: 8px 24px;
 }
 
+.built ul {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 20px;
+
+  li {
+    display: contents;
+  }
+
+  span {
+    color: var(--color-mute);
+  }
+}
+
 footer {
   margin-top: 96px;
   display: flex;
