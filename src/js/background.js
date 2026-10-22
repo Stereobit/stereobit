@@ -26,6 +26,7 @@ const THICK = 8
 const PITCH = 13
 const MAX_MESSAGES = 320
 const FLOAT_IN = 1.5
+const LAUNCH = 0.9
 const BASE_ALPHA = 0.8
 
 let W = 0
@@ -33,7 +34,7 @@ let H = 0
 let Lx = 0
 let Ly = 0
 let speed = 0
-const src = { x: 0, y: 0 }
+const src = { x: 0, y: 0, left: 0, width: 0 }
 const rows = []
 let spawnAcc = 0
 const pointer = { x: -1e4, y: -1e4, on: false, at: 0 }
@@ -55,6 +56,8 @@ function geometry() {
   if (r.width) {
     src.x = Math.round(r.right + 8)
     src.y = r.top + r.height * 0.55
+    src.left = r.left
+    src.width = r.width
   } else {
     src.x = Math.min(W * 0.04, 60)
     src.y = H * 0.95
@@ -64,7 +67,18 @@ function geometry() {
 }
 
 const tOf = (dy) => Math.pow(Math.max(0, dy / Ly), 1 / 2.7)
-const anchor = (r) => [src.x + Lx * Math.pow(r.t, 0.7), src.y - r.dy]
+const easeOut = (k) => 1 - Math.pow(1 - k, 3)
+
+// Launch progress: 0 while still inside the name, 1 once fully out.
+function launched(r, now) {
+  return easeOut(Math.min(1, (now - r.start) / LAUNCH))
+}
+
+function anchor(r, now) {
+  const e = now === undefined ? 1 : launched(r, now)
+  const x = src.x + Lx * Math.pow(r.t, 0.7) - 16 * (1 - e)
+  return [x, src.y - r.dy]
+}
 
 function addMessage(r, now) {
   if (r.n >= MAX_MESSAGES) return
@@ -82,7 +96,9 @@ function spawn(now) {
     t: 0,
     n: 0,
     rate: 1.1 + Math.random() * 1.4,
-    next: Math.random() * 0.6,
+    next: 0.12,
+    burst: 3 + Math.floor(Math.random() * 3),
+    start: now,
     w: new Float32Array(MAX_MESSAGES),
     pos: new Float32Array(MAX_MESSAGES),
     born: new Float32Array(MAX_MESSAGES),
@@ -90,8 +106,7 @@ function spawn(now) {
     refs: [],
   }
   for (let i = 0; i < MAX_MESSAGES; i++) r.seed[i] = Math.random() - 0.5
-  const initial = 2 + Math.floor(Math.random() * 5)
-  for (let i = 0; i < initial; i++) addMessage(r, now - 10)
+  addMessage(r, now)
   if (rows.length > 4) {
     for (let i = 0; i < 2; i++) {
       r.refs.push({
@@ -122,9 +137,15 @@ function step(now, dt) {
     r.next -= dt
     while (r.next <= 0) {
       addMessage(r, now)
-      r.next +=
-        (0.85 + Math.random() * 0.3) /
-        (r.rate * (0.5 + 0.8 * r.t) * lengthScale)
+      if (r.burst > 0) {
+        // The first few messages spring out together.
+        r.burst--
+        r.next += 0.07 + Math.random() * 0.05
+      } else {
+        r.next +=
+          (0.85 + Math.random() * 0.3) /
+          (r.rate * (0.5 + 0.8 * r.t) * lengthScale)
+      }
     }
   }
 }
@@ -148,19 +169,22 @@ function findHovered() {
 function draw(now) {
   ctx.clearRect(0, 0, W, H)
   const hovered = findHovered()
+  let pulse = 0
   ctx.lineCap = "butt"
 
   for (const r of rows) {
-    const [px, py] = anchor(r)
+    const [px, py] = anchor(r, now)
     const ax = Math.round(px)
     const ay = Math.round(py)
     if (ay < -10 || ay > H + 10) continue
+    const launch = launched(r, now)
 
     let recent = 0
     while (recent < r.n && now - r.born[r.n - 1 - recent] < FLOAT_IN) recent++
     const settled = r.n - recent
     const len = settled > 0 ? r.pos[settled - 1] + r.w[settled - 1] : 0
-    const alpha = BASE_ALPHA * (0.22 + 0.78 * Math.min(1, r.t * 2.5))
+    const alpha =
+      BASE_ALPHA * (0.22 + 0.78 * Math.min(1, r.t * 2.5)) * (0.4 + 0.6 * launch)
     const isHovered = r === hovered
 
     // Solid body, in colour bands by distance from the anchor.
@@ -206,7 +230,33 @@ function draw(now) {
     ctx.moveTo(ax + 1, ay - THICK)
     ctx.lineTo(ax + 1, ay + THICK / 2)
     ctx.stroke()
+
+    // Launch glint: the new thread glows gold from the spring dot outward,
+    // with a short streak running ahead of its end, then fades.
+    if (launch < 1) {
+      const g = 1 - launch
+      const end = r.n ? r.pos[r.n - 1] + r.w[r.n - 1] : 0
+      ctx.strokeStyle = rgba(HIGHLIGHT, g * 0.7)
+      ctx.lineWidth = THICK
+      ctx.beginPath()
+      ctx.moveTo(src.x - 4, ay)
+      ctx.lineTo(ax + end, ay)
+      ctx.stroke()
+      ctx.strokeStyle = rgba(HIGHLIGHT, g * 0.8)
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(ax + end, ay)
+      ctx.lineTo(ax + end + 24 * g + 6, ay)
+      ctx.stroke()
+      pulse = Math.max(pulse, g)
+    }
   }
+
+  // The spring dot, just right of the name, swells on every launch.
+  ctx.fillStyle = rgba(HIGHLIGHT, 0.75 + pulse * 0.25)
+  ctx.beginPath()
+  ctx.arc(src.x - 5, Math.round(src.y), 2.4 + pulse * 2, 0, Math.PI * 2)
+  ctx.fill()
 
   if (hovered) drawReferences(hovered)
 }
