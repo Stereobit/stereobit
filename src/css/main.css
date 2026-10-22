@@ -112,6 +112,16 @@ a {
   font-size: 14px;
   color: var(--color-mute);
   margin-bottom: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  img {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
 
   b {
     font-weight: 500;
