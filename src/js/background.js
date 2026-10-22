@@ -172,6 +172,20 @@ function draw(now) {
   let pulse = 0
   ctx.lineCap = "butt"
 
+  // Each row as a hairline across the whole page, swept out from the spring
+  // dot while the thread launches, then resting faint.
+  const dotX = src.x - 5
+  for (const r of rows) {
+    const y = Math.round(src.y - r.dy)
+    if (y < -2 || y > H + 2) continue
+    const e = launched(r, now)
+    const reach = W * e
+    const x0 = Math.max(0, dotX - reach)
+    const x1 = Math.min(W, dotX + reach)
+    ctx.fillStyle = rgba(SOLID[0], 0.035 + (1 - e) * 0.09)
+    ctx.fillRect(x0, y, x1 - x0, 1)
+  }
+
   for (const r of rows) {
     const [px, py] = anchor(r, now)
     const ax = Math.round(px)
